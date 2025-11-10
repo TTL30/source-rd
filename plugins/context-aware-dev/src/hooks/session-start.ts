@@ -164,18 +164,23 @@ interface SessionMetadata {
 }
 
 async function checkForIncompleteWork(projectDir: string, artifactsDir: string): Promise<void> {
+  const debugLog: string[] = [];
+
   try {
-    console.log('[Context-Aware Plugin] DEBUG: Checking for incomplete work...');
-    console.log('[Context-Aware Plugin] DEBUG: artifactsDir =', artifactsDir);
+    debugLog.push('=== Smart Resumption Debug Log ===');
+    debugLog.push(`Time: ${new Date().toISOString()}`);
+    debugLog.push(`Project Dir: ${projectDir}`);
+    debugLog.push(`Artifacts Dir: ${artifactsDir}`);
 
     // Scan artifacts directory for session folders
     const entries = await fs.readdir(artifactsDir, { withFileTypes: true });
     const sessionDirs = entries.filter(entry => entry.isDirectory());
 
-    console.log('[Context-Aware Plugin] DEBUG: Found', sessionDirs.length, 'session directories');
+    debugLog.push(`Found ${sessionDirs.length} session directories`);
 
     if (sessionDirs.length === 0) {
-      console.log('[Context-Aware Plugin] DEBUG: No previous work, exiting');
+      debugLog.push('No previous work, exiting');
+      await writeDebugLog(projectDir, debugLog);
       return; // No previous work
     }
 
@@ -184,28 +189,33 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
     for (const dir of sessionDirs) {
       try {
         const metadataPath = path.join(artifactsDir, dir.name, 'metadata.json');
+        debugLog.push(`Trying to load: ${metadataPath}`);
         const metadataContent = await fs.readFile(metadataPath, 'utf8');
         const metadata: SessionMetadata = JSON.parse(metadataContent);
         sessions.push(metadata);
-        console.log('[Context-Aware Plugin] DEBUG: Loaded session:', metadata.session_id.substring(0, 8), 'status:', metadata.status);
+        debugLog.push(`✓ Loaded: ${metadata.session_id.substring(0, 8)} | status: ${metadata.status} | feature: ${metadata.feature_name}`);
       } catch (error) {
-        console.log('[Context-Aware Plugin] DEBUG: Failed to load metadata for', dir.name, ':', error);
+        debugLog.push(`✗ Failed to load ${dir.name}: ${error}`);
         // Skip sessions without metadata or with invalid JSON
         continue;
       }
     }
 
-    console.log('[Context-Aware Plugin] DEBUG: Total sessions loaded:', sessions.length);
+    debugLog.push(`Total sessions loaded: ${sessions.length}`);
 
     // Find incomplete work (status != "completed")
     const incompleteSessions = sessions.filter(s =>
       s.status !== 'completed' && s.status !== 'done'
     );
 
-    console.log('[Context-Aware Plugin] DEBUG: Incomplete sessions:', incompleteSessions.length);
+    debugLog.push(`Incomplete sessions: ${incompleteSessions.length}`);
+    incompleteSessions.forEach(s => {
+      debugLog.push(`  - ${s.feature_name} (${s.status})`);
+    });
 
     if (incompleteSessions.length === 0) {
-      console.log('[Context-Aware Plugin] DEBUG: No incomplete work, exiting');
+      debugLog.push('No incomplete work, exiting');
+      await writeDebugLog(projectDir, debugLog);
       return; // No incomplete work
     }
 
@@ -252,9 +262,24 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
     console.log('');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('');
+
+    debugLog.push('✓ Successfully displayed resumption prompt');
+    await writeDebugLog(projectDir, debugLog);
   } catch (error) {
-    console.error('[Context-Aware Plugin] DEBUG: Error in checkForIncompleteWork:', error);
+    debugLog.push(`ERROR: ${error}`);
+    await writeDebugLog(projectDir, debugLog);
     // Silently fail - this is just a suggestion
+  }
+}
+
+async function writeDebugLog(projectDir: string, logs: string[]): Promise<void> {
+  try {
+    const sessionsDir = path.join(projectDir, '.claude', 'sessions');
+    await fs.mkdir(sessionsDir, { recursive: true });
+    const logPath = path.join(sessionsDir, 'resumption-debug.log');
+    await fs.writeFile(logPath, logs.join('\n') + '\n', 'utf8');
+  } catch {
+    // Even logging fails silently
   }
 }
 
