@@ -50,9 +50,16 @@ Gather technical details:
 
 ## Creating the Specification
 
-After gathering requirements, create a comprehensive spec document at:
+After gathering requirements, create the spec document in the session's artifact directory.
 
-**`.claude/artifacts/{session_id}/spec.md`**
+**First, get the session ID:**
+```bash
+cat .claude/sessions/current-session.txt
+```
+
+**Then create the spec at:** `.claude/artifacts/{session_id}/spec.md`
+
+The session ID is automatically set by the plugin's SessionStart hook.
 
 The spec should include:
 
@@ -110,19 +117,19 @@ As a [user type], I want to [action], so that [benefit].
 
 ## Metadata Tracking
 
-After creating the spec, also create a metadata file:
+After creating the spec, also create a metadata file in the same session directory:
 
 **`.claude/artifacts/{session_id}/metadata.json`**
 
 ```json
 {
   "session_id": "{session_id}",
-  "created_at": "{timestamp}",
+  "feature_name": "{feature name from conversation}",
+  "created_at": "{ISO timestamp}",
   "status": "elaborated",
   "has_spec": true,
   "has_plan": false,
-  "has_implementation": false,
-  "feature_name": "{extracted from conversation}"
+  "has_implementation": false
 }
 ```
 
@@ -139,7 +146,8 @@ After creating the spec, also create a metadata file:
 
 - Be thorough but not overwhelming - this should feel like a conversation
 - Use the TodoWrite tool to track progress through the elaboration process
-- Save artifacts to `.claude/artifacts/{session_id}/` directory
+- Save artifacts to `.claude/artifacts/{session_id}/` directory (read session ID from `.claude/sessions/current-session.txt`)
 - The spec is a living document - it can be updated as understanding improves
+- At the end, remind the user of the artifact directory path so they know where to find it
 
 Ready to begin the requirements elaboration session!

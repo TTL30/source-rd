@@ -14,7 +14,10 @@ Before running this command:
 2. ✅ A plan exists at `.claude/artifacts/{session_id}/plan.md`
 3. ✅ Plan has been reviewed and approved
 
-If missing spec or plan, suggest running `/elaborate` or `/plan` first.
+**Finding the artifacts:**
+- Read the session ID from `.claude/sessions/current-session.txt`
+- Load artifacts from `.claude/artifacts/{session_id}/`
+- If missing spec or plan, suggest running `/elaborate` or `/plan` first
 
 ## Your Role
 
@@ -30,7 +33,10 @@ Guide the user through implementing the plan by:
 
 ### Step 1: Load Context
 
-First, load all planning artifacts:
+First, read the session ID and load all planning artifacts:
+```bash
+cat .claude/sessions/current-session.txt
+```
 - Use Read tool to load `.claude/artifacts/{session_id}/spec.md`
 - Use Read tool to load `.claude/artifacts/{session_id}/plan.md`
 - Use Read tool to load `.claude/artifacts/{session_id}/metadata.json`
@@ -118,7 +124,7 @@ Update documentation:
 
 ### Update Metadata Regularly
 
-Throughout implementation, update `.claude/artifacts/{session_id}/metadata.json`:
+Throughout implementation, update the metadata file in the session directory:
 
 ```json
 {
@@ -147,7 +153,7 @@ Throughout implementation, update `.claude/artifacts/{session_id}/metadata.json`
 
 ### Create Implementation Log
 
-Keep a log of what was done at `.claude/artifacts/{session_id}/implementation-log.md`:
+Keep a log of what was done in the session directory `.claude/artifacts/{session_id}/implementation-log.md`:
 
 ```markdown
 # Implementation Log

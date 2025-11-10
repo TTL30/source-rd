@@ -32,7 +32,16 @@ async function handleSessionStart(input: SessionStartInput): Promise<void> {
     const sessionArtifactsDir = path.join(artifactsDir, session_id);
     await fs.mkdir(sessionArtifactsDir, { recursive: true });
 
+    // Ensure sessions directory exists
+    const sessionsDir = path.join(claudeDir, 'sessions');
+    await fs.mkdir(sessionsDir, { recursive: true });
+
+    // Write current session ID to file for slash commands to access
+    const currentSessionFile = path.join(sessionsDir, 'current-session.txt');
+    await fs.writeFile(currentSessionFile, session_id, 'utf8');
+
     console.log('[Context-Aware Plugin] ✓ Plugin ready');
+    console.log(`[Context-Aware Plugin] Session: ${session_id.substring(0, 8)}`);
     console.log(`[Context-Aware Plugin] Artifacts: .claude/artifacts/${session_id}`);
   } catch (error) {
     console.error('[Context-Aware Plugin] Error during session start:', error);

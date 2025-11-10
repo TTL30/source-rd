@@ -13,7 +13,10 @@ Before running this command:
 1. ✅ A specification document should exist at `.claude/artifacts/{session_id}/spec.md`
 2. ✅ Requirements should be clearly defined and approved
 
-If no spec exists, suggest running `/elaborate` first.
+**Finding the spec:**
+- Read the session ID from `.claude/sessions/current-session.txt`
+- Load the spec from `.claude/artifacts/{session_id}/spec.md`
+- If no spec exists, suggest running `/elaborate` first
 
 ## Your Role
 
@@ -30,7 +33,10 @@ Transform the specification into an actionable technical plan that includes:
 
 ### Step 1: Read and Analyze the Spec
 
-First, read the specification:
+First, read the session ID and load the specification:
+```bash
+cat .claude/sessions/current-session.txt
+```
 - Use the Read tool to load `.claude/artifacts/{session_id}/spec.md`
 - Understand all requirements, constraints, and success criteria
 - Identify any ambiguities that need clarification
@@ -66,7 +72,7 @@ Document key decisions:
 
 ## Creating the Plan
 
-Create a comprehensive plan document at:
+Create a comprehensive plan document in the same session directory as the spec:
 
 **`.claude/artifacts/{session_id}/plan.md`**
 
@@ -209,18 +215,18 @@ How we'll measure success:
 
 ## Update Metadata
 
-Update the metadata file at `.claude/artifacts/{session_id}/metadata.json`:
+Update the metadata file in the same session directory:
 
 ```json
 {
   "session_id": "{session_id}",
+  "feature_name": "{name}",
   "created_at": "{original_timestamp}",
   "plan_created_at": "{current_timestamp}",
   "status": "planned",
   "has_spec": true,
   "has_plan": true,
   "has_implementation": false,
-  "feature_name": "{name}",
   "estimated_hours": 14
 }
 ```
