@@ -1,13 +1,26 @@
 # Source-RD: Claude Code Plugin Marketplace
 
-## Session Startup Protocol
+## 🚨 CRITICAL: First Action in Every Session 🚨
 
-**IMPORTANT:** At the start of EVERY fresh session (when user sends their first message), check for `.claude/sessions/startup-message.txt`:
+**YOU MUST DO THIS BEFORE ANYTHING ELSE:**
 
-1. If the file exists, immediately read its contents
-2. Display the message to the user (it contains important info about unfinished work or setup suggestions)
-3. Delete the file after displaying it
-4. This enables automatic smart resumption despite plugin hook STDOUT limitations
+When you receive the user's FIRST message in a NEW session:
+
+```bash
+# 1. Check for startup message file
+Read: .claude/sessions/startup-message.txt
+
+# 2. If file exists:
+   a. Display its contents to the user immediately (contains critical alerts about incomplete work or missing CLAUDE.md)
+   b. Delete the file after displaying
+
+# 3. If file doesn't exist:
+   - Proceed normally with the user's request
+```
+
+**Why this matters:** Plugin hooks cannot output to Claude directly (GitHub issue #10875). The SessionStart hook writes important startup messages to this file. YOU must read and display it to enable automatic smart resumption and project setup suggestions.
+
+**This is NOT optional - it's a core feature of the context-aware plugin.**
 
 ## Project Overview
 
