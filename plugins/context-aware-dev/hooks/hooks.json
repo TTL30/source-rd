@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PLUGIN_ROOT/dist/hooks/session-start.js\"",
+            "command": "#!/bin/bash\necho '[Context-Aware Plugin] Hook triggered'\necho '[Context-Aware Plugin] CLAUDE_PLUGIN_ROOT='\"$CLAUDE_PLUGIN_ROOT\"\necho '[Context-Aware Plugin] Reading stdin...'\ncat > /tmp/claude-hook-input.json\necho '[Context-Aware Plugin] Input saved to /tmp/claude-hook-input.json'\ncat /tmp/claude-hook-input.json\ncat /tmp/claude-hook-input.json | node \"$CLAUDE_PLUGIN_ROOT/dist/hooks/session-start.js\"\nexit 0",
             "timeout": 60
           }
         ]
