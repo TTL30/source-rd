@@ -1,6 +1,6 @@
 {
   "name": "context-aware-dev",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Context-aware development plugin providing organizational knowledge sharing, guided workflows, and persistent context across sessions",
   "author": {
     "name": "Your Name",
@@ -15,6 +15,7 @@
     "knowledge-management",
     "collaboration",
     "skills",
+    "commands",
     "stripe",
     "oauth",
     "testing",

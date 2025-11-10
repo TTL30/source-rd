@@ -10,13 +10,13 @@
     {
       "name": "context-aware-dev",
       "source": "./plugins/context-aware-dev",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Organizational knowledge sharing, guided workflows, and persistent context",
       "author": {
         "name": "Your Name",
         "email": "your@email.com"
       },
-      "keywords": ["development", "workflow", "context", "hooks", "patterns", "knowledge-management", "skills", "stripe", "oauth", "testing", "database"]
+      "keywords": ["development", "workflow", "context", "hooks", "patterns", "knowledge-management", "skills", "commands", "stripe", "oauth", "testing", "database"]
     }
   ]
 }
