@@ -1,38 +1,60 @@
 #!/usr/bin/env node
 
-async function handlePostToolUse(
-  toolName: string,
-  toolOutput: string
-): Promise<void> {
+interface PostToolUseInput {
+  session_id: string;
+  transcript_path: string;
+  cwd: string;
+  permission_mode: string;
+  hook_event_name: string;
+  tool_name: string;
+  tool_input: Record<string, any>;
+  tool_response: Record<string, any>;
+}
+
+async function handlePostToolUse(input: PostToolUseInput): Promise<void> {
   try {
     // Phase 1: Basic tool usage logging
     // This will be enhanced in later phases to detect significant changes
     // and suggest CLAUDE.md refresh
 
-    console.log(`[Context-Aware Plugin] Tool used: ${toolName}`);
+    const { tool_name, session_id } = input;
 
-    // Log output length for debugging (avoid logging full output which can be large)
-    const outputLength = toolOutput ? toolOutput.length : 0;
-    console.log(`[Context-Aware Plugin] Output length: ${outputLength} characters`);
+    console.log(`[Context-Aware Plugin] Tool used: ${tool_name}`);
+    console.log(`[Context-Aware Plugin] Session: ${session_id.substring(0, 8)}`);
   } catch (error) {
     console.error('[Context-Aware Plugin] Error during post-tool-use:', error);
     // Don't exit with error code to avoid blocking Claude Code execution
   }
 }
 
-// Parse command line arguments
-const args = process.argv.slice(2);
+// Read input from stdin (JSON)
+async function readStdin(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
 
-if (args.length < 2) {
-  console.error('[Context-Aware Plugin] Error: Missing required arguments');
-  console.error('Usage: post-tool-use.js <tool_name> <tool_output>');
-  process.exit(1);
+    process.stdin.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    process.stdin.on('end', () => {
+      resolve(data);
+    });
+
+    process.stdin.on('error', (err) => {
+      reject(err);
+    });
+  });
 }
 
-const [toolName, toolOutput] = args;
-
-// Execute handler
-handlePostToolUse(toolName, toolOutput).catch((error) => {
-  console.error('[Context-Aware Plugin] Fatal error:', error);
-  // Don't exit with error code to avoid blocking Claude Code execution
-});
+// Main execution
+(async () => {
+  try {
+    const inputJson = await readStdin();
+    const input: PostToolUseInput = JSON.parse(inputJson);
+    await handlePostToolUse(input);
+  } catch (error) {
+    console.error('[Context-Aware Plugin] Fatal error:', error);
+    // Don't exit with error code to avoid blocking Claude Code execution
+  }
+})();

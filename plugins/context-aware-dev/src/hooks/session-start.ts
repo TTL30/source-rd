@@ -3,15 +3,22 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-type SessionMatcher = 'startup' | 'resume' | 'clear' | 'compact';
+interface SessionStartInput {
+  session_id: string;
+  source: 'startup' | 'resume' | 'clear' | 'compact';
+  transcript_path: string;
+  cwd: string;
+  permission_mode: string;
+  hook_event_name: string;
+}
 
-async function handleSessionStart(
-  sessionId: string,
-  matcher: SessionMatcher,
-  projectDir: string
-): Promise<void> {
+async function handleSessionStart(input: SessionStartInput): Promise<void> {
   try {
-    console.log(`[Context-Aware Plugin] Session ${sessionId} started (${matcher})`);
+    const { session_id, source, cwd } = input;
+    const projectDir = process.env.CLAUDE_PROJECT_DIR || cwd;
+
+    console.log(`[Context-Aware Plugin] Session ${session_id.substring(0, 8)} started (${source})`);
+    console.log(`[Context-Aware Plugin] Project: ${projectDir}`);
 
     // Ensure .claude directory exists
     const claudeDir = path.join(projectDir, '.claude');
@@ -22,37 +29,45 @@ async function handleSessionStart(
     await fs.mkdir(artifactsDir, { recursive: true });
 
     // Create session-specific artifact directory
-    const sessionArtifactsDir = path.join(artifactsDir, sessionId);
+    const sessionArtifactsDir = path.join(artifactsDir, session_id);
     await fs.mkdir(sessionArtifactsDir, { recursive: true });
 
     console.log('[Context-Aware Plugin] ✓ Plugin ready');
-    console.log(`[Context-Aware Plugin] Artifact directory: ${sessionArtifactsDir}`);
+    console.log(`[Context-Aware Plugin] Artifacts: .claude/artifacts/${session_id}`);
   } catch (error) {
     console.error('[Context-Aware Plugin] Error during session start:', error);
     process.exit(1);
   }
 }
 
-// Parse command line arguments
-const args = process.argv.slice(2);
+// Read input from stdin (JSON)
+async function readStdin(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
 
-if (args.length < 3) {
-  console.error('[Context-Aware Plugin] Error: Missing required arguments');
-  console.error('Usage: session-start.js <session_id> <matcher> <project_dir>');
-  process.exit(1);
+    process.stdin.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    process.stdin.on('end', () => {
+      resolve(data);
+    });
+
+    process.stdin.on('error', (err) => {
+      reject(err);
+    });
+  });
 }
 
-const [sessionId, matcher, projectDir] = args;
-
-// Validate matcher
-const validMatchers: SessionMatcher[] = ['startup', 'resume', 'clear', 'compact'];
-if (!validMatchers.includes(matcher as SessionMatcher)) {
-  console.error(`[Context-Aware Plugin] Error: Invalid matcher "${matcher}". Must be one of: ${validMatchers.join(', ')}`);
-  process.exit(1);
-}
-
-// Execute handler
-handleSessionStart(sessionId, matcher as SessionMatcher, projectDir).catch((error) => {
-  console.error('[Context-Aware Plugin] Fatal error:', error);
-  process.exit(1);
-});
+// Main execution
+(async () => {
+  try {
+    const inputJson = await readStdin();
+    const input: SessionStartInput = JSON.parse(inputJson);
+    await handleSessionStart(input);
+  } catch (error) {
+    console.error('[Context-Aware Plugin] Fatal error:', error);
+    process.exit(1);
+  }
+})();
