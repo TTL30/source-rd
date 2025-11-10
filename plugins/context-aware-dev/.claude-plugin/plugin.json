@@ -23,5 +23,6 @@
   ],
   "license": "MIT",
   "repository": "https://github.com/YOUR_USERNAME/claude-marketplace",
-  "skills": "./.claude/skills"
+  "skills": "./skills",
+  "commands": "./commands"
 }
