@@ -1,15 +1,14 @@
 # Node modules
 node_modules/
 
-# Build outputs
-dist/
-*.js
-*.js.map
-*.d.ts
-*.d.ts.map
+# IMPORTANT: Keep dist/ directories for GitHub marketplace installation
+# Claude Code needs the compiled JavaScript to run hooks
 
-# Except for root level config files
-!*.config.js
+# Only ignore specific build artifacts outside of dist/
+# *.js
+# *.js.map
+# *.d.ts
+# *.d.ts.map
 
 # Dependencies
 package-lock.json
