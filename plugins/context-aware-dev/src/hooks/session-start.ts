@@ -165,11 +165,17 @@ interface SessionMetadata {
 
 async function checkForIncompleteWork(projectDir: string, artifactsDir: string): Promise<void> {
   try {
+    console.log('[Context-Aware Plugin] DEBUG: Checking for incomplete work...');
+    console.log('[Context-Aware Plugin] DEBUG: artifactsDir =', artifactsDir);
+
     // Scan artifacts directory for session folders
     const entries = await fs.readdir(artifactsDir, { withFileTypes: true });
     const sessionDirs = entries.filter(entry => entry.isDirectory());
 
+    console.log('[Context-Aware Plugin] DEBUG: Found', sessionDirs.length, 'session directories');
+
     if (sessionDirs.length === 0) {
+      console.log('[Context-Aware Plugin] DEBUG: No previous work, exiting');
       return; // No previous work
     }
 
@@ -181,18 +187,25 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
         const metadataContent = await fs.readFile(metadataPath, 'utf8');
         const metadata: SessionMetadata = JSON.parse(metadataContent);
         sessions.push(metadata);
-      } catch {
+        console.log('[Context-Aware Plugin] DEBUG: Loaded session:', metadata.session_id.substring(0, 8), 'status:', metadata.status);
+      } catch (error) {
+        console.log('[Context-Aware Plugin] DEBUG: Failed to load metadata for', dir.name, ':', error);
         // Skip sessions without metadata or with invalid JSON
         continue;
       }
     }
+
+    console.log('[Context-Aware Plugin] DEBUG: Total sessions loaded:', sessions.length);
 
     // Find incomplete work (status != "completed")
     const incompleteSessions = sessions.filter(s =>
       s.status !== 'completed' && s.status !== 'done'
     );
 
+    console.log('[Context-Aware Plugin] DEBUG: Incomplete sessions:', incompleteSessions.length);
+
     if (incompleteSessions.length === 0) {
+      console.log('[Context-Aware Plugin] DEBUG: No incomplete work, exiting');
       return; // No incomplete work
     }
 
@@ -240,6 +253,7 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('');
   } catch (error) {
+    console.error('[Context-Aware Plugin] DEBUG: Error in checkForIncompleteWork:', error);
     // Silently fail - this is just a suggestion
   }
 }
