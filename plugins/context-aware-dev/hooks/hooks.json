@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/hooks/session-start.js '${CLAUDE_SESSION_ID}' '${CLAUDE_MATCHER}' '${CLAUDE_PROJECT_DIR}'",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/hooks/session-start.js ${CLAUDE_SESSION_ID} ${CLAUDE_MATCHER} ${CLAUDE_PROJECT_DIR}",
             "timeout": 60
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/hooks/post-tool-use.js '${CLAUDE_TOOL_NAME}' '${CLAUDE_TOOL_OUTPUT}'",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/hooks/post-tool-use.js ${CLAUDE_TOOL_NAME} ${CLAUDE_TOOL_OUTPUT}",
             "timeout": 60
           }
         ]
