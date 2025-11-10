@@ -44,9 +44,15 @@ async function handleSessionStart(input: SessionStartInput): Promise<void> {
     console.log(`[Context-Aware Plugin] Session: ${session_id.substring(0, 8)}`);
     console.log(`[Context-Aware Plugin] Artifacts: .claude/artifacts/${session_id}`);
 
-    // Check for CLAUDE.md and suggest initialization on startup (not resume)
+    // Check for CLAUDE.md and suggest initialization
+    // Only on 'startup' to avoid being too noisy on every resume
     if (source === 'startup') {
       await checkAndSuggestClaudeMd(projectDir);
+    }
+
+    // Check for incomplete work on both startup AND resume
+    // (Users want to know about unfinished work whenever they start working)
+    if (source === 'startup' || source === 'resume') {
       await checkForIncompleteWork(projectDir, artifactsDir);
     }
   } catch (error) {
