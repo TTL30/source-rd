@@ -203,9 +203,9 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
 
     debugLog.push(`Total sessions loaded: ${sessions.length}`);
 
-    // Find incomplete work (status != "completed")
+    // Find incomplete work (status != "completed", "done", or "implemented")
     const incompleteSessions = sessions.filter(s =>
-      s.status !== 'completed' && s.status !== 'done'
+      s.status !== 'completed' && s.status !== 'done' && s.status !== 'implemented'
     );
 
     debugLog.push(`Incomplete sessions: ${incompleteSessions.length}`);
