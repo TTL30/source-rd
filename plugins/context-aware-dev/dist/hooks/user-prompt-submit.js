@@ -88,14 +88,22 @@ async function readStdin() {
 }
 // Main execution
 (async () => {
+    let input = null;
     try {
         const inputJson = await readStdin();
-        const input = JSON.parse(inputJson);
-        await handleUserPromptSubmit(input);
+        input = JSON.parse(inputJson);
+        if (input) {
+            await handleUserPromptSubmit(input);
+        }
     }
     catch (error) {
-        // Output empty JSON on error
-        console.log(JSON.stringify({}));
+        // Output event name on error with fallback
+        const eventName = input?.hook_event_name || 'UserPromptSubmit';
+        console.log(JSON.stringify({ hook_event_name: eventName }));
     }
+    // Ensure output is flushed before exit
+    process.stdout.write('', () => {
+        process.exit(0);
+    });
 })();
 //# sourceMappingURL=user-prompt-submit.js.map
