@@ -91,25 +91,35 @@ async function checkAndSuggestClaudeMd(projectDir) {
         // Check if this is an existing project (has code files)
         const hasExistingCode = await isExistingProject(projectDir);
         if (hasExistingCode) {
-            console.log('');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('💡 Project Setup Suggestion');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('');
-            console.log('I notice this is an existing project without a CLAUDE.md file.');
-            console.log('');
-            console.log('🎯 Why create CLAUDE.md?');
-            console.log('   • Helps me understand your codebase architecture faster');
-            console.log('   • Persists project context across all sessions');
-            console.log('   • Documents build commands, testing, and conventions');
-            console.log('   • Makes me more productive from the start');
-            console.log('');
-            console.log('📝 To create it, run:');
-            console.log('');
-            console.log('   /init');
-            console.log('');
-            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-            console.log('');
+            // Write CLAUDE.md suggestion to startup message file
+            const message = [];
+            message.push('');
+            message.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            message.push('💡 Project Setup Suggestion');
+            message.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            message.push('');
+            message.push('I notice this is an existing project without a CLAUDE.md file.');
+            message.push('');
+            message.push('🎯 Why create CLAUDE.md?');
+            message.push('   • Helps me understand your codebase architecture faster');
+            message.push('   • Persists project context across all sessions');
+            message.push('   • Documents build commands, testing, and conventions');
+            message.push('   • Makes me more productive from the start');
+            message.push('');
+            message.push('📝 To create it, run: /init');
+            message.push('');
+            message.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            const sessionsDir = path.join(projectDir, '.claude', 'sessions');
+            await fs.mkdir(sessionsDir, { recursive: true });
+            const startupMsgPath = path.join(sessionsDir, 'startup-message.txt');
+            // Append to existing message or create new
+            try {
+                const existing = await fs.readFile(startupMsgPath, 'utf8');
+                await fs.writeFile(startupMsgPath, existing + '\n' + message.join('\n'), 'utf8');
+            }
+            catch {
+                await fs.writeFile(startupMsgPath, message.join('\n'), 'utf8');
+            }
         }
     }
     catch (error) {
@@ -206,45 +216,41 @@ async function checkForIncompleteWork(projectDir, artifactsDir) {
         // Show suggestion for the most recent incomplete work
         const mostRecent = incompleteSessions[0];
         const timeAgo = getTimeAgo(mostRecent.last_updated_at || mostRecent.plan_created_at || mostRecent.created_at);
-        // Output in a format that Claude will communicate to the user
-        console.log('');
-        console.log('='.repeat(70));
-        console.log('IMPORTANT: UNFINISHED WORK DETECTED - PLEASE INFORM USER');
-        console.log('='.repeat(70));
-        console.log('');
-        console.log(`Feature: "${mostRecent.feature_name}"`);
-        console.log(`Last worked on: ${timeAgo}`);
-        console.log(`Status: ${mostRecent.status}`);
-        console.log('');
-        console.log('Progress:');
-        console.log(`  - Specification: ${mostRecent.has_spec ? 'COMPLETED ✅' : 'PENDING ⏳'}`);
-        console.log(`  - Technical Plan: ${mostRecent.has_plan ? 'COMPLETED ✅' : 'PENDING ⏳'}`);
-        console.log(`  - Implementation: ${mostRecent.has_implementation ? 'COMPLETED ✅' : 'PENDING ⏳'}`);
-        console.log('');
-        console.log(`Artifact Location: .claude/artifacts/${mostRecent.session_id.substring(0, 8)}...`);
-        console.log('');
+        // Write startup message to file for Claude to read and communicate
+        const startupMessage = [];
+        startupMessage.push('💡 Unfinished Work Detected');
+        startupMessage.push('');
+        startupMessage.push(`I see you were working on "${mostRecent.feature_name}" ${timeAgo}.`);
+        startupMessage.push('');
+        startupMessage.push('📋 Progress:');
+        startupMessage.push(`   ${mostRecent.has_spec ? '✅' : '⏳'} Specification`);
+        startupMessage.push(`   ${mostRecent.has_plan ? '✅' : '⏳'} Technical Plan`);
+        startupMessage.push(`   ${mostRecent.has_implementation ? '✅' : '⏳'} Implementation`);
+        startupMessage.push('');
+        startupMessage.push(`📁 Artifacts: .claude/artifacts/${mostRecent.session_id.substring(0, 8)}...`);
+        startupMessage.push('');
         if (incompleteSessions.length > 1) {
-            console.log(`Note: ${incompleteSessions.length} total unfinished features exist.`);
-            console.log('');
+            startupMessage.push(`ℹ️  You have ${incompleteSessions.length} unfinished features total.`);
+            startupMessage.push('');
         }
         // Suggest next action based on status
         let nextAction = '';
         if (mostRecent.status === 'elaborated' && !mostRecent.has_plan) {
-            nextAction = 'Run /plan to create technical plan';
+            nextAction = '/plan';
         }
         else if (mostRecent.status === 'planned' && !mostRecent.has_implementation) {
-            nextAction = 'Run /implement to start implementation';
+            nextAction = '/implement';
         }
         else {
-            nextAction = 'Load artifacts to continue working';
+            nextAction = 'Load artifacts to continue';
         }
-        console.log(`Suggested Next Step: ${nextAction}`);
-        console.log('');
-        console.log('='.repeat(70));
-        console.log('ACTION REQUIRED: Ask user if they want to continue this work');
-        console.log('='.repeat(70));
-        console.log('');
-        debugLog.push('✓ Successfully displayed resumption prompt');
+        startupMessage.push(`💬 Ready to continue? Run: ${nextAction}`);
+        // Write to startup message file
+        const sessionsDir = path.join(projectDir, '.claude', 'sessions');
+        await fs.mkdir(sessionsDir, { recursive: true });
+        const startupMsgPath = path.join(sessionsDir, 'startup-message.txt');
+        await fs.writeFile(startupMsgPath, startupMessage.join('\n'), 'utf8');
+        debugLog.push('✓ Wrote startup message to file');
         await writeDebugLog(projectDir, debugLog);
     }
     catch (error) {

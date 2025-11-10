@@ -1,5 +1,14 @@
 # Source-RD: Claude Code Plugin Marketplace
 
+## Session Startup Protocol
+
+**IMPORTANT:** At the start of EVERY fresh session (when user sends their first message), check for `.claude/sessions/startup-message.txt`:
+
+1. If the file exists, immediately read its contents
+2. Display the message to the user (it contains important info about unfinished work or setup suggestions)
+3. Delete the file after displaying it
+4. This enables automatic smart resumption despite plugin hook STDOUT limitations
+
 ## Project Overview
 
 **Source-RD** is a Claude Code plugin marketplace that provides a curated collection of reusable development plugins for AI-assisted workflows. The primary plugin, **Context-Aware Development**, implements a multi-phase system for organizational knowledge sharing, guided workflows, and persistent context management across Claude Code sessions.
