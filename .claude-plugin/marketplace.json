@@ -1,0 +1,22 @@
+{
+  "name": "context-aware-marketplace",
+  "version": "1.0.0",
+  "description": "Claude Code plugin marketplace for context-aware development tools",
+  "owner": {
+    "name": "Your Name",
+    "url": "https://github.com/YOUR_USERNAME"
+  },
+  "plugins": [
+    {
+      "name": "context-aware-dev",
+      "source": "./plugins/context-aware-dev",
+      "version": "0.1.0",
+      "description": "Organizational knowledge sharing, guided workflows, and persistent context",
+      "author": {
+        "name": "Your Name",
+        "email": "your@email.com"
+      },
+      "keywords": ["development", "workflow", "context", "hooks", "patterns", "knowledge-management"]
+    }
+  ]
+}

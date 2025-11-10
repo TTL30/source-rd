@@ -1,0 +1,32 @@
+{
+  "name": "context-aware-dev-plugin",
+  "version": "0.1.0",
+  "description": "Context-aware development plugin for Claude Code",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "development",
+    "workflow"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
