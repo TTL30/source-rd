@@ -230,37 +230,43 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
     const mostRecent = incompleteSessions[0];
     const timeAgo = getTimeAgo(mostRecent.last_updated_at || mostRecent.plan_created_at || mostRecent.created_at);
 
+    // Output in a format that Claude will communicate to the user
     console.log('');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('💡 Unfinished Work Detected');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('='.repeat(70));
+    console.log('IMPORTANT: UNFINISHED WORK DETECTED - PLEASE INFORM USER');
+    console.log('='.repeat(70));
     console.log('');
-    console.log(`I see you were working on "${mostRecent.feature_name}" ${timeAgo}.`);
+    console.log(`Feature: "${mostRecent.feature_name}"`);
+    console.log(`Last worked on: ${timeAgo}`);
+    console.log(`Status: ${mostRecent.status}`);
     console.log('');
-    console.log('📋 Progress:');
-    console.log(`   ${mostRecent.has_spec ? '✅' : '⏳'} Specification`);
-    console.log(`   ${mostRecent.has_plan ? '✅' : '⏳'} Technical Plan`);
-    console.log(`   ${mostRecent.has_implementation ? '✅' : '⏳'} Implementation`);
+    console.log('Progress:');
+    console.log(`  - Specification: ${mostRecent.has_spec ? 'COMPLETED ✅' : 'PENDING ⏳'}`);
+    console.log(`  - Technical Plan: ${mostRecent.has_plan ? 'COMPLETED ✅' : 'PENDING ⏳'}`);
+    console.log(`  - Implementation: ${mostRecent.has_implementation ? 'COMPLETED ✅' : 'PENDING ⏳'}`);
     console.log('');
-    console.log(`📁 Artifacts: .claude/artifacts/${mostRecent.session_id.substring(0, 8)}...`);
+    console.log(`Artifact Location: .claude/artifacts/${mostRecent.session_id.substring(0, 8)}...`);
     console.log('');
 
     if (incompleteSessions.length > 1) {
-      console.log(`ℹ️  You have ${incompleteSessions.length} unfinished features total.`);
+      console.log(`Note: ${incompleteSessions.length} total unfinished features exist.`);
       console.log('');
     }
 
     // Suggest next action based on status
+    let nextAction = '';
     if (mostRecent.status === 'elaborated' && !mostRecent.has_plan) {
-      console.log('💬 Ready to continue? Run: /plan');
+      nextAction = 'Run /plan to create technical plan';
     } else if (mostRecent.status === 'planned' && !mostRecent.has_implementation) {
-      console.log('💬 Ready to continue? Run: /implement');
+      nextAction = 'Run /implement to start implementation';
     } else {
-      console.log('💬 Want to resume? Load the artifacts and continue working.');
+      nextAction = 'Load artifacts to continue working';
     }
-
+    console.log(`Suggested Next Step: ${nextAction}`);
     console.log('');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('='.repeat(70));
+    console.log('ACTION REQUIRED: Ask user if they want to continue this work');
+    console.log('='.repeat(70));
     console.log('');
 
     debugLog.push('✓ Successfully displayed resumption prompt');
