@@ -175,23 +175,12 @@ interface SessionMetadata {
 }
 
 async function checkForIncompleteWork(projectDir: string, artifactsDir: string): Promise<void> {
-  const debugLog: string[] = [];
-
   try {
-    debugLog.push('=== Smart Resumption Debug Log ===');
-    debugLog.push(`Time: ${new Date().toISOString()}`);
-    debugLog.push(`Project Dir: ${projectDir}`);
-    debugLog.push(`Artifacts Dir: ${artifactsDir}`);
-
     // Scan artifacts directory for session folders
     const entries = await fs.readdir(artifactsDir, { withFileTypes: true });
     const sessionDirs = entries.filter(entry => entry.isDirectory());
 
-    debugLog.push(`Found ${sessionDirs.length} session directories`);
-
     if (sessionDirs.length === 0) {
-      debugLog.push('No previous work, exiting');
-      await writeDebugLog(projectDir, debugLog);
       return; // No previous work
     }
 
@@ -200,33 +189,21 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
     for (const dir of sessionDirs) {
       try {
         const metadataPath = path.join(artifactsDir, dir.name, 'metadata.json');
-        debugLog.push(`Trying to load: ${metadataPath}`);
         const metadataContent = await fs.readFile(metadataPath, 'utf8');
         const metadata: SessionMetadata = JSON.parse(metadataContent);
         sessions.push(metadata);
-        debugLog.push(`✓ Loaded: ${metadata.session_id.substring(0, 8)} | status: ${metadata.status} | feature: ${metadata.feature_name}`);
-      } catch (error) {
-        debugLog.push(`✗ Failed to load ${dir.name}: ${error}`);
+      } catch {
         // Skip sessions without metadata or with invalid JSON
         continue;
       }
     }
-
-    debugLog.push(`Total sessions loaded: ${sessions.length}`);
 
     // Find incomplete work (status != "completed", "done", or "implemented")
     const incompleteSessions = sessions.filter(s =>
       s.status !== 'completed' && s.status !== 'done' && s.status !== 'implemented'
     );
 
-    debugLog.push(`Incomplete sessions: ${incompleteSessions.length}`);
-    incompleteSessions.forEach(s => {
-      debugLog.push(`  - ${s.feature_name} (${s.status})`);
-    });
-
     if (incompleteSessions.length === 0) {
-      debugLog.push('No incomplete work, exiting');
-      await writeDebugLog(projectDir, debugLog);
       return; // No incomplete work
     }
 
@@ -276,24 +253,8 @@ async function checkForIncompleteWork(projectDir: string, artifactsDir: string):
     await fs.mkdir(sessionsDir, { recursive: true });
     const startupMsgPath = path.join(sessionsDir, 'startup-message.txt');
     await fs.writeFile(startupMsgPath, startupMessage.join('\n'), 'utf8');
-
-    debugLog.push('✓ Wrote startup message to file');
-    await writeDebugLog(projectDir, debugLog);
-  } catch (error) {
-    debugLog.push(`ERROR: ${error}`);
-    await writeDebugLog(projectDir, debugLog);
-    // Silently fail - this is just a suggestion
-  }
-}
-
-async function writeDebugLog(projectDir: string, logs: string[]): Promise<void> {
-  try {
-    const sessionsDir = path.join(projectDir, '.claude', 'sessions');
-    await fs.mkdir(sessionsDir, { recursive: true });
-    const logPath = path.join(sessionsDir, 'resumption-debug.log');
-    await fs.writeFile(logPath, logs.join('\n') + '\n', 'utf8');
   } catch {
-    // Even logging fails silently
+    // Silently fail - this is just a suggestion
   }
 }
 
