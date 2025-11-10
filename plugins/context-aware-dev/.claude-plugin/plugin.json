@@ -1,6 +1,6 @@
 {
   "name": "context-aware-dev",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Context-aware development plugin providing organizational knowledge sharing, guided workflows, and persistent context across sessions",
   "author": {
     "name": "Your Name",
@@ -13,8 +13,14 @@
     "hooks",
     "patterns",
     "knowledge-management",
-    "collaboration"
+    "collaboration",
+    "skills",
+    "stripe",
+    "oauth",
+    "testing",
+    "database"
   ],
   "license": "MIT",
-  "repository": "https://github.com/YOUR_USERNAME/claude-marketplace"
+  "repository": "https://github.com/YOUR_USERNAME/claude-marketplace",
+  "skills": ".claude/skills"
 }
