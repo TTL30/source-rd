@@ -34,20 +34,20 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __importStar(require("fs-extra"));
+const fs = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
 async function handleSessionStart(sessionId, matcher, projectDir) {
     try {
         console.log(`[Context-Aware Plugin] Session ${sessionId} started (${matcher})`);
         // Ensure .claude directory exists
         const claudeDir = path.join(projectDir, '.claude');
-        await fs.ensureDir(claudeDir);
+        await fs.mkdir(claudeDir, { recursive: true });
         // Ensure artifacts directory exists
         const artifactsDir = path.join(claudeDir, 'artifacts');
-        await fs.ensureDir(artifactsDir);
+        await fs.mkdir(artifactsDir, { recursive: true });
         // Create session-specific artifact directory
         const sessionArtifactsDir = path.join(artifactsDir, sessionId);
-        await fs.ensureDir(sessionArtifactsDir);
+        await fs.mkdir(sessionArtifactsDir, { recursive: true });
         console.log('[Context-Aware Plugin] ✓ Plugin ready');
         console.log(`[Context-Aware Plugin] Artifact directory: ${sessionArtifactsDir}`);
     }

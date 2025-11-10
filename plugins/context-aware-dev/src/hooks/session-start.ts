@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import * as fs from 'fs-extra';
+import * as fs from 'fs/promises';
 import * as path from 'path';
 
 type SessionMatcher = 'startup' | 'resume' | 'clear' | 'compact';
@@ -15,15 +15,15 @@ async function handleSessionStart(
 
     // Ensure .claude directory exists
     const claudeDir = path.join(projectDir, '.claude');
-    await fs.ensureDir(claudeDir);
+    await fs.mkdir(claudeDir, { recursive: true });
 
     // Ensure artifacts directory exists
     const artifactsDir = path.join(claudeDir, 'artifacts');
-    await fs.ensureDir(artifactsDir);
+    await fs.mkdir(artifactsDir, { recursive: true });
 
     // Create session-specific artifact directory
     const sessionArtifactsDir = path.join(artifactsDir, sessionId);
-    await fs.ensureDir(sessionArtifactsDir);
+    await fs.mkdir(sessionArtifactsDir, { recursive: true });
 
     console.log('[Context-Aware Plugin] ✓ Plugin ready');
     console.log(`[Context-Aware Plugin] Artifact directory: ${sessionArtifactsDir}`);
