@@ -60,10 +60,90 @@ async function handleSessionStart(input) {
         console.log('[Context-Aware Plugin] ✓ Plugin ready');
         console.log(`[Context-Aware Plugin] Session: ${session_id.substring(0, 8)}`);
         console.log(`[Context-Aware Plugin] Artifacts: .claude/artifacts/${session_id}`);
+        // Check for CLAUDE.md and suggest initialization on startup (not resume)
+        if (source === 'startup') {
+            await checkAndSuggestClaudeMd(projectDir);
+        }
     }
     catch (error) {
         console.error('[Context-Aware Plugin] Error during session start:', error);
         process.exit(1);
+    }
+}
+async function checkAndSuggestClaudeMd(projectDir) {
+    try {
+        const claudeMdPath = path.join(projectDir, 'CLAUDE.md');
+        // Check if CLAUDE.md exists
+        try {
+            await fs.access(claudeMdPath);
+            // CLAUDE.md exists, no need to suggest
+            return;
+        }
+        catch {
+            // CLAUDE.md doesn't exist, continue checking
+        }
+        // Check if this is an existing project (has code files)
+        const hasExistingCode = await isExistingProject(projectDir);
+        if (hasExistingCode) {
+            console.log('');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('💡 Project Setup Suggestion');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('');
+            console.log('I notice this is an existing project without a CLAUDE.md file.');
+            console.log('');
+            console.log('🎯 Why create CLAUDE.md?');
+            console.log('   • Helps me understand your codebase architecture faster');
+            console.log('   • Persists project context across all sessions');
+            console.log('   • Documents build commands, testing, and conventions');
+            console.log('   • Makes me more productive from the start');
+            console.log('');
+            console.log('📝 To create it, run:');
+            console.log('');
+            console.log('   /init');
+            console.log('');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('');
+        }
+    }
+    catch (error) {
+        // Silently fail - this is just a suggestion
+    }
+}
+async function isExistingProject(projectDir) {
+    try {
+        const entries = await fs.readdir(projectDir, { withFileTypes: true });
+        // Check for common indicators of an existing project
+        const indicators = [
+            'package.json', // Node.js project
+            'requirements.txt', // Python project
+            'Cargo.toml', // Rust project
+            'go.mod', // Go project
+            'pom.xml', // Java/Maven project
+            'build.gradle', // Java/Gradle project
+            'Gemfile', // Ruby project
+            'composer.json', // PHP project
+            '.git', // Git repository
+        ];
+        // Check if any indicators exist
+        const hasIndicator = entries.some(entry => indicators.includes(entry.name));
+        if (hasIndicator) {
+            return true;
+        }
+        // Also check if there are multiple source files
+        const sourceFiles = entries.filter(entry => entry.isFile() && (entry.name.endsWith('.ts') ||
+            entry.name.endsWith('.js') ||
+            entry.name.endsWith('.py') ||
+            entry.name.endsWith('.rs') ||
+            entry.name.endsWith('.go') ||
+            entry.name.endsWith('.java') ||
+            entry.name.endsWith('.rb') ||
+            entry.name.endsWith('.php')));
+        // If 3+ source files, consider it an existing project
+        return sourceFiles.length >= 3;
+    }
+    catch {
+        return false;
     }
 }
 // Read input from stdin (JSON)
