@@ -16,11 +16,5 @@
     "collaboration"
   ],
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/claude-marketplace"
-  },
-  "engines": {
-    "node": ">=20.0.0"
-  }
+  "repository": "https://github.com/YOUR_USERNAME/claude-marketplace"
 }
