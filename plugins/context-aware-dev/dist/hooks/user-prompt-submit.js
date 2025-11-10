@@ -43,8 +43,9 @@ async function handleUserPromptSubmit(input) {
         // Check if startup message exists
         try {
             const message = await fs.readFile(startupMsgPath, 'utf8');
-            // Output as JSON with additionalContext
+            // Output as JSON with event name and additionalContext
             const output = {
+                hook_event_name: input.hook_event_name,
                 hookSpecificOutput: {
                     additionalContext: message
                 }
@@ -54,14 +55,19 @@ async function handleUserPromptSubmit(input) {
             await fs.unlink(startupMsgPath);
         }
         catch {
-            // No startup message, do nothing
-            // Output empty JSON so hook succeeds
-            console.log(JSON.stringify({}));
+            // No startup message, output event name so hook succeeds
+            const output = {
+                hook_event_name: input.hook_event_name
+            };
+            console.log(JSON.stringify(output));
         }
     }
     catch (error) {
-        // Output empty JSON on error so hook doesn't block
-        console.log(JSON.stringify({}));
+        // Output event name on error so hook doesn't block
+        const output = {
+            hook_event_name: input.hook_event_name
+        };
+        console.log(JSON.stringify(output));
     }
 }
 // Read input from stdin (JSON)
